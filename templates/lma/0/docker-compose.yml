@@ -53,7 +53,7 @@ logstash-indexer:
   image: logstash:5.1.1-alpine
   links:
   - redis:redis
-  - elasitcsearch:elasticsearch
+  - elasticsearch:elasticsearch
   stdin_open: true
   labels:
     io.rancher.sidekicks: logstash-indexer-config
