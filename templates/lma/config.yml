@@ -2,8 +2,8 @@
 name: LMA
 description: >
   Monitoring-Logging-Alerting Stack for SenseTime Container Infrastructure.
-version: 0.0.1-rancher1
+version: 0.1
 category: Logging
 maintainer: Arman <aerman@sensetime.com|balleddog@gmail.com>
 license: Apache2
-projectURL: https://github.com/balleddog/rancher-cattle-sensetime
+projectURL: https://github.com/balleddog/rancher-catalog

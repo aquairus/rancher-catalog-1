@@ -1,6 +1,6 @@
 .catalog:
   name: "LMA"
-  version: "rancher-0.0.1"
+  version: "0.1"
   description: "Logging-Monitoring-Alerting"
   questions:
     - variable: "collector_inputs"
