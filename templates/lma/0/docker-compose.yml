@@ -7,23 +7,62 @@ services:
     labels:
       container_group: monitoring
       io.rancher.scheduler.global: 'true'
-  logstash:
-    image: logstash:5
-    stdin_open: true
-    volumes:
-    - /etc/logstash/conf.d
-    tty: true
-    links:
-    - elasticsearch:elasticsearch
-    command:
-    - -f
-    - /etc/logstash/conf.d/
-    - --config.string
-    - input { udp { port => 5000 codec => "json" } tcp { port => 6000 codec => "json" } } output { elasticsearch { hosts => "elasticsearch:9200"} }
-    labels:
-      container_group: logging
-      io.rancher.container.hostname_override: container_name
-      io.rancher.container.pull_image: always
+logstash-indexer-config:
+  restart: always
+  image: rancher/logstash-config:v0.2.0
+  labels:
+    io.rancher.container.hostname_override: container_name
+    container_group: logging
+redis:
+  restart: always
+  tty: true
+  image: redis:3.2.6-alpine
+  stdin_open: true
+  labels:
+    io.rancher.container.hostname_override: container_name
+    container_group: logging
+logstash-indexer:
+  restart: always
+  tty: true
+  volumes_from:
+  - logstash-indexer-config
+  command:
+  - logstash
+  - -f
+  - /etc/logstash
+  image: logstash:5.1.1-alpine
+  links:
+  - redis:redis
+  external_links:
+  - ${elasticsearch_link}:elasticsearch
+  stdin_open: true
+  labels:
+    io.rancher.sidekicks: logstash-indexer-config
+    io.rancher.container.hostname_override: container_name
+    container_group: logging
+logstash-collector-config:
+  restart: always
+  image: rancher/logstash-config:v0.2.0
+  labels:
+    io.rancher.container.hostname_override: container_name
+    container_group: logging
+logstash-collector:
+  restart: always
+  tty: true
+  links:
+  - redis:redis
+  volumes_from:
+  - logstash-collector-config
+  command:
+  - logstash
+  - -f
+  - /etc/logstash
+  image: logstash:5.1.1-alpine
+  stdin_open: true
+  labels:
+    io.rancher.sidekicks: logstash-collector-config
+    io.rancher.container.hostname_override: container_name
+    container_group: logging
   prom-conf:
     image: infinityworks/prom-conf:17
     network_mode: none
