@@ -40,19 +40,8 @@
       type: "multiline"
       required: true
       default: |
-        if [type] == "log" {
-            elasticsearch {
-              hosts => ["elasticsearch"]
-              index => "logstash-logs-%{+YYYY.MM.dd}"
-          }
-        } else if [type] == "alert" {
-            elasticsearch {
-              hosts => ["elasticsearch"]
-              index => "logstash-alerts-%{+YYYY.MM.dd}"
-          }
-        }
-        stdout {
-          codec => rubydebug
+        elasticsearch {
+          hosts => ["elasticsearch.rancher.internal:9200"]
         }
 node-exporter:
   start_on_create: true
@@ -137,10 +126,10 @@ logstash-indexer:
           data_type => "list"
           key => "logstash"
         }
-    filters: |
-      ${indexer_filters}
-    outputs: |
-      ${indexer_outputs}
+      filters: |
+        ${indexer_filters}
+      outputs: |
+        ${indexer_outputs}
 logstash-collector:
   metadata:
     retain_ip: true
