@@ -1,0 +1,167 @@
+version: '2'
+services:
+  node-exporter:
+    image: prom/node-exporter:latest
+    stdin_open: true
+    tty: true
+    labels:
+      container_group: monitoring
+      io.rancher.scheduler.global: 'true'
+  logstash:
+    image: logstash:5
+    stdin_open: true
+    volumes:
+    - /etc/logstash/conf.d
+    tty: true
+    links:
+    - elasticsearch:elasticsearch
+    command:
+    - -f
+    - /etc/logstash/conf.d/
+    - --config.string
+    - input { udp { port => 5000 codec => "json" } tcp { port => 6000 codec => "json" } } output { elasticsearch { hosts => "elasticsearch:9200"} }
+    labels:
+      container_group: logging
+      io.rancher.container.hostname_override: container_name
+      io.rancher.container.pull_image: always
+  prom-conf:
+    image: infinityworks/prom-conf:17
+    network_mode: none
+    volumes:
+    - /etc/prom-conf/
+    tty: true
+    links:
+    - alertmanager:alertmanager
+    - cadvisor:cadvisor
+    - node-exporter:node-exporter
+  elastalert:
+    image: balleddog/elastalert
+    environment:
+      ELASTICSEARCH_HOST: elasticsearch
+    stdin_open: true
+    tty: true
+    links:
+    - elasticsearch:elasticsearch
+    labels:
+      io.rancher.container.pull_image: always
+      container.group: alerting
+  elasticsearch:
+    image: elasticsearch:5
+    environment:
+      ES_JAVA_OPTS: -Xms1g -Xmx1g
+      discovery.zen.ping.unicast.hosts: elasticsearch
+      cluster.name: es
+      network.host: 0.0.0.0
+      discovery.zen.minimum_master_nodes: '1'
+    stdin_open: true
+    volumes:
+    - /usr/share/elasticsearch/data
+    tty: true
+    labels:
+      container_group: logging
+      io.rancher.container.hostname_override: container_name
+      io.rancher.container.pull_image: always
+  grafana:
+    image: grafana/grafana:4.2.0
+    tty: true
+    links:
+    - prometheus:prometheus
+    volumes_from:
+    - graf-db
+    labels:
+      io.rancher.sidekicks: graf-db
+      traefik.enable: 'true'
+      traefik.alias: grafana
+      container_group: monitoring
+      traefik.port: '3000'
+      traefik.domain: rancher.sensetime.com
+  cadvisor:
+    image: google/cadvisor:latest
+    stdin_open: true
+    volumes:
+    - /:/rootfs:ro
+    - /var/run:/var/run:rw
+    - /sys:/sys:ro
+    - /var/lib/docker/:/var/lib/docker:ro
+    tty: true
+    labels:
+      container_group: monitoring
+      io.rancher.scheduler.global: 'true'
+  kopf:
+    image: rancher/kopf:v0.4.0
+    environment:
+      KOPF_SERVER_NAME: es.dev
+      KOPF_ES_SERVERS: elasticsearch:9200
+    stdin_open: true
+    tty: true
+    links:
+    - elasticsearch:elasticsearch
+    labels:
+      traefik.enable: 'true'
+      traefik.alias: kopf
+      container_group: logging
+      traefik.port: '80'
+      traefik.domain: rancher.sensetime.com
+      io.rancher.container.hostname_override: container_name
+      io.rancher.container.pull_image: always
+  prometheus:
+    image: prom/prometheus:v1.4.1
+    tty: true
+    links:
+    - alertmanager:alertmanager
+    - cadvisor:cadvisor
+    - node-exporter:node-exporter
+    volumes_from:
+    - prom-conf
+    command:
+    - -alertmanager.url=http://alertmanager:9093
+    - -config.file=/etc/prom-conf/prometheus.yml
+    - -storage.local.path=/prometheus
+    - -web.console.libraries=/etc/prometheus/console_libraries
+    - -web.console.templates=/etc/prometheus/consoles
+    labels:
+      io.rancher.sidekicks: prom-conf
+      traefik.enable: 'true'
+      traefik.alias: prometheus
+      container_group: monitoring
+      traefik.port: '9090'
+      traefik.domain: rancher.sensetime.com
+  graf-db:
+    image: infinityworks/graf-db:10
+    network_mode: none
+    volumes:
+    - /var/lib/grafana/
+    tty: true
+    links:
+    - prometheus:prometheus
+    command:
+    - cat
+  kibana:
+    image: kibana:5
+    environment:
+      SERVER_PORT: '5601'
+      SERVER_HOST: “0.0.0.0
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+    stdin_open: true
+    tty: true
+    links:
+    - elasticsearch:elasticsearch
+    labels:
+      traefik.enable: 'true'
+      traefik.alias: kibana
+      container_group: logging
+      traefik.port: '5601'
+      traefik.domain: rancher.sensetime.com
+      io.rancher.container.hostname_override: container_name
+      io.rancher.container.pull_image: always
+  alertmanager:
+    image: prom/alertmanager:v0.5.0
+    stdin_open: true
+    tty: true
+    labels:
+      traefik.enable: 'true'
+      traefik.alias: alertmanager
+      container_group: alerting
+      traefik.port: '9093'
+      traefik.domain: rancher.sensetime.com
+      io.rancher.container.pull_image: always

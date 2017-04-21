@@ -1,0 +1,78 @@
+version: '2'
+services:
+  node-exporter:
+    start_on_create: true
+  logstash:
+    scale: 1
+    start_on_create: true
+  prom-conf:
+    scale: 1
+    start_on_create: true
+  elastalert:
+    scale: 1
+    start_on_create: true
+  elasticsearch:
+    scale: 1
+    start_on_create: true
+  grafana:
+    scale: 1
+    start_on_create: true
+    health_check:
+      healthy_threshold: 2
+      response_timeout: 5000
+      port: 3000
+      unhealthy_threshold: 3
+      interval: 5000
+      strategy: recreate
+  cadvisor:
+    start_on_create: true
+  kopf:
+    scale: 1
+    start_on_create: true
+    health_check:
+      healthy_threshold: 2
+      response_timeout: 2000
+      port: 80
+      unhealthy_threshold: 3
+      initializing_timeout: 60000
+      interval: 2000
+      strategy: recreate
+      reinitializing_timeout: 60000
+  prometheus:
+    scale: 1
+    start_on_create: true
+    health_check:
+      healthy_threshold: 2
+      response_timeout: 5000
+      port: 9090
+      unhealthy_threshold: 3
+      interval: 5000
+      strategy: recreate
+  graf-db:
+    scale: 1
+    start_on_create: true
+  kibana:
+    scale: 1
+    start_on_create: true
+    health_check:
+      healthy_threshold: 2
+      response_timeout: 2000
+      port: 5601
+      unhealthy_threshold: 3
+      initializing_timeout: 60000
+      interval: 2000
+      strategy: recreate
+      request_line: GET "/" "HTTP/1.0"
+      reinitializing_timeout: 60000
+  alertmanager:
+    scale: 1
+    start_on_create: true
+    health_check:
+      healthy_threshold: 2
+      response_timeout: 2000
+      port: 9093
+      unhealthy_threshold: 3
+      initializing_timeout: 60000
+      interval: 2000
+      strategy: recreate
+      reinitializing_timeout: 60000
