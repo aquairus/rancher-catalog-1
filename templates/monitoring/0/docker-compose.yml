@@ -52,7 +52,6 @@ grafana:
   tty: true
   links:
   - prometheus:prometheus
-  - ${elasticsearch_link}:elasticsearch
   external_links:
   - ${elasticsearch_link}:elasticsearch
   volumes_from:
