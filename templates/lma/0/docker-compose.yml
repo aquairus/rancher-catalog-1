@@ -1,102 +1,3 @@
-elasticsearch:
-  image: elasticsearch:5
-  environment:
-    ES_JAVA_OPTS: -Xms1g -Xmx1g
-    discovery.zen.ping.unicast.hosts: elasticsearch
-    cluster.name: es
-    network.host: 0.0.0.0
-    discovery.zen.minimum_master_nodes: '1'
-  stdin_open: true
-  volumes:
-  - /usr/share/elasticsearch/data
-  tty: true
-  labels:
-    container_group: logging
-    io.rancher.container.hostname_override: container_name
-    io.rancher.container.pull_image: always
-kopf:
-  image: rancher/kopf:v0.4.0
-  environment:
-    KOPF_SERVER_NAME: es.dev
-    KOPF_ES_SERVERS: elasticsearch:9200
-  stdin_open: true
-  tty: true
-  links:
-  - elasticsearch:elasticsearch
-  labels:
-    container_group: logging
-    io.rancher.container.hostname_override: container_name
-    io.rancher.container.pull_image: always
-logstash-indexer-config:
-  restart: always
-  image: rancher/logstash-config:v0.2.0
-  labels:
-    io.rancher.container.hostname_override: container_name
-    container_group: logging
-redis:
-  restart: always
-  tty: true
-  image: redis:3.2.6-alpine
-  stdin_open: true
-  labels:
-    io.rancher.container.hostname_override: container_name
-    container_group: logging
-logstash-indexer:
-  restart: always
-  tty: true
-  volumes_from:
-  - logstash-indexer-config
-  command:
-  - logstash
-  - -f
-  - /etc/logstash
-  image: logstash:5.1.1-alpine
-  links:
-  - redis:redis
-  - elasticsearch:elasticsearch
-  stdin_open: true
-  labels:
-    io.rancher.sidekicks: logstash-indexer-config
-    io.rancher.container.hostname_override: container_name
-    container_group: logging
-logstash-collector-config:
-  restart: always
-  image: rancher/logstash-config:v0.2.0
-  labels:
-    io.rancher.container.hostname_override: container_name
-    container_group: logging
-logstash-collector:
-  restart: always
-  tty: true
-  links:
-  - redis:redis
-  volumes_from:
-  - logstash-collector-config
-  command:
-  - logstash
-  - -f
-  - /etc/logstash
-  image: logstash:5.1.1-alpine
-  stdin_open: true
-  labels:
-    io.rancher.sidekicks: logstash-collector-config
-    io.rancher.container.hostname_override: container_name
-    container_group: logging
-kibana:
-  image: kibana:5
-  environment:
-    SERVER_PORT: '5601'
-    SERVER_HOST: “0.0.0.0
-    ELASTICSEARCH_URL: http://elasticsearch:9200
-  stdin_open: true
-  tty: true
-  links:
-  - elasticsearch:elasticsearch
-  labels:
-    container_group: logging
-    io.rancher.container.hostname_override: container_name
-    io.rancher.container.pull_image: always
-
 prometheus:
   image: prom/prometheus:v1.4.1
   tty: true
@@ -151,6 +52,9 @@ grafana:
   tty: true
   links:
   - prometheus:prometheus
+  - ${elasticsearch_link}:elasticsearch
+  external_links:
+  - ${elasticsearch_link}:elasticsearch
   volumes_from:
   - graf-db
   labels:
@@ -173,8 +77,8 @@ elastalert:
     ELASTICSEARCH_HOST: elasticsearch
   stdin_open: true
   tty: true
-  links:
-  - elasticsearch:elasticsearch
+  external_links:
+  - ${elasticsearch_link}:elasticsearch
   labels:
     io.rancher.container.pull_image: always
     container.group: alerting
