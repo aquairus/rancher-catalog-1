@@ -1,9 +1,9 @@
 ---
-name: LMA
+name: Monitoring
 description: >
-  Monitoring-Logging-Alerting Stack for SenseTime Container Infrastructure.
+  Monitoring-Alerting Stack for SenseTime Container Infrastructure.
 version: 0.1
-category: Logging
+category: Monitoring
 maintainer: Arman <aerman@sensetime.com|balleddog@gmail.com>
 license: Apache2
 projectURL: https://github.com/balleddog/rancher-catalog
