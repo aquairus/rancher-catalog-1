@@ -1,0 +1,9 @@
+---
+name: Logstash
+description: >
+  Logstash Stack for SenseTime Container Infrastructure.
+version: 5.1.1-rancher1
+category: Mownitoring
+maintainer: Arman <aerman@sensetime.com|balleddog@gmail.com>
+license: Apache2
+projectURL: https://github.com/balleddog/rancher-catalog
