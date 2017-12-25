@@ -1,0 +1,9 @@
+---
+name: Elasticseach Curator
+description: >
+  Elasticseach Curator,delete the old index
+version: 5.1.1
+category: Logging
+maintainer: chenxinyuan  <chenxinyuan@sensetime.com>
+license: Apache2
+projectURL: https://github.com/balleddog/rancher-catalog

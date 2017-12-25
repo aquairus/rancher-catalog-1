@@ -1,0 +1,19 @@
+.catalog:
+  name: "Logging"
+  version: "5.1.1"
+  description: "Elasticseach Curator,delete the old index"
+  questions:
+    - variable: "hosts"
+      description: |
+        the es link for delete
+      label: "Elasticsearch stack/service"
+      default: "es/elasticsearch-clients"
+      required: true
+      type: "service"
+    - variable: "day"
+      description: |
+        delete index $day days ago
+      label: "day"
+      type: "string"
+      required: true
+      default: 30

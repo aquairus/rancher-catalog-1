@@ -1,0 +1,12 @@
+curator:
+  image: registry.sensetime.com/devops-k8s/curator:rancher
+  environment:
+    day: ${day}
+    hosts: es_hosts
+  external_links:
+  - ${hosts}:es_hosts
+  stdin_open: true
+  tty: true
+  labels:
+    io.rancher.container.pull_image: always
+    cron.schedule: '"1 0 * * *"'
