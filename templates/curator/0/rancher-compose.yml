@@ -10,10 +10,10 @@
       default: "es/elasticsearch-clients"
       required: true
       type: "service"
-    - variable: "day"
+    - variable: "days"
       description: |
-        delete index $day days ago
-      label: "day"
+        delete index $days days ago
+      label: "days"
       type: "string"
       required: true
       default: 30
